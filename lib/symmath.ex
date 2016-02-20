@@ -1,25 +1,29 @@
 defmodule SymMath do
 
+  # Avoid prefixing for internal calls
   defmacro __using__(_opts) do
     quote do
       import SymMath
     end
   end
 
-  defmacro formula(expr) do
-  	Macro.escape(expr)
-  end
+#  defmacro formula(expr) do
+#  	Macro.escape(expr)
+#  end
 
   @doc """
-  Expand expression removing parens
+  Expand expression removing parenseses (not finished)
   """
-  def expand_sums(expr) do
+  defp expand_sums(expr) do
     Macro.postwalk expr, fn 
       {:+, ctx, [a, {:+, ctx2, [b, c]}]} -> {:+, ctx, [{:+, ctx2, [a, b]}, c]}
       e -> e
     end
   end
 
+  @doc """
+  Simplify expression
+  """
   def simplify(expr) do
     #IO.puts "simplify #{inspect(expr)}"
     Macro.postwalk expr, fn 
@@ -58,7 +62,8 @@ defmodule SymMath do
     end
   end
 
-  def canonize(expr) do
+  # Some simplifications
+  defp canonize(expr) do
     Macro.postwalk expr, fn 
       # Replace a-x by -1*x+a
       {:-, ctx, [a, e]} when is_constant(a) and not is_constant(e) -> {:+, ctx, [{:*, ctx, [-1, e]}, a]}
@@ -70,6 +75,9 @@ defmodule SymMath do
     end
   end
 
+  @doc """
+  Differentiate expression (no simplification is performed)
+  """
   defmacro dif(expr) do
     #IO.puts "dif #{inspect(expr)}"
     # Bring to "canonical" form
@@ -153,7 +161,10 @@ defmodule SymMath do
     end
   end
 
-  defmacro d(expr) do
+  @doc """
+  Differentiate and simplify
+  """
+  defmacro d_s(expr) do
     quote do
       simplify dif unquote expr
     end

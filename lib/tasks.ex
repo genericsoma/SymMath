@@ -6,7 +6,7 @@ defmodule Mix.Tasks.Dif do
 
   def run(_) do
     {:ok, expr} = Code.string_to_quoted IO.gets "Enter an expression: "
-    q = quote do: simplify dif unquote expr
+    q = quote do: d_s unquote expr
     {res, _} = Code.eval_quoted(q, [], __ENV__)
     IO.puts "Differentiated: " <> Macro.to_string res
   end
